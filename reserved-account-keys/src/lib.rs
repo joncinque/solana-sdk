@@ -5,7 +5,7 @@
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 use {
     lazy_static::lazy_static,
-    solana_feature_set::{self as feature_set, FeatureSet},
+    solana_feature_set_interface::FeatureSet,
     solana_pubkey::Pubkey,
     solana_sdk_ids::{
         address_lookup_table, bpf_loader, bpf_loader_deprecated, bpf_loader_upgradeable,
@@ -135,39 +135,47 @@ impl ReservedAccount {
     }
 }
 
+mod add_new_reserved_account_keys {
+    solana_pubkey::declare_id!("8U4skmMVnF6k2kMvrWbQuRUT3qQSiTYpSjqmhmgfthZu");
+}
+
+pub mod enable_secp256r1_precompile {
+    solana_pubkey::declare_id!("srremy31J5Y25FrAApwVb9kZcfXbusYMMsvTK9aWv5q");
+}
+
 // New reserved accounts should be added in alphabetical order and must specify
 // a feature id for activation. Reserved accounts cannot be removed from this
 // list without breaking consensus.
 lazy_static! {
     static ref RESERVED_ACCOUNTS: Vec<ReservedAccount> = [
         // builtin programs
-        ReservedAccount::new_pending(address_lookup_table::id(), feature_set::add_new_reserved_account_keys::id()),
+        ReservedAccount::new_pending(address_lookup_table::id(), add_new_reserved_account_keys::id()),
         ReservedAccount::new_active(bpf_loader::id()),
         ReservedAccount::new_active(bpf_loader_deprecated::id()),
         ReservedAccount::new_active(bpf_loader_upgradeable::id()),
-        ReservedAccount::new_pending(compute_budget::id(), feature_set::add_new_reserved_account_keys::id()),
+        ReservedAccount::new_pending(compute_budget::id(), add_new_reserved_account_keys::id()),
         ReservedAccount::new_active(config::id()),
-        ReservedAccount::new_pending(ed25519_program::id(), feature_set::add_new_reserved_account_keys::id()),
+        ReservedAccount::new_pending(ed25519_program::id(), add_new_reserved_account_keys::id()),
         ReservedAccount::new_active(feature::id()),
-        ReservedAccount::new_pending(loader_v4::id(), feature_set::add_new_reserved_account_keys::id()),
-        ReservedAccount::new_pending(secp256k1_program::id(), feature_set::add_new_reserved_account_keys::id()),
-        ReservedAccount::new_pending(secp256r1_program::id(), feature_set::enable_secp256r1_precompile::id()),
+        ReservedAccount::new_pending(loader_v4::id(), add_new_reserved_account_keys::id()),
+        ReservedAccount::new_pending(secp256k1_program::id(), add_new_reserved_account_keys::id()),
+        ReservedAccount::new_pending(secp256r1_program::id(), enable_secp256r1_precompile::id()),
         #[allow(deprecated)]
         ReservedAccount::new_active(stake::config::id()),
         ReservedAccount::new_active(stake::id()),
         ReservedAccount::new_active(system_program::id()),
         ReservedAccount::new_active(vote::id()),
-        ReservedAccount::new_pending(zk_elgamal_proof_program::id(), feature_set::add_new_reserved_account_keys::id()),
-        ReservedAccount::new_pending(zk_token_proof_program::id(), feature_set::add_new_reserved_account_keys::id()),
+        ReservedAccount::new_pending(zk_elgamal_proof_program::id(), add_new_reserved_account_keys::id()),
+        ReservedAccount::new_pending(zk_token_proof_program::id(), add_new_reserved_account_keys::id()),
 
         // sysvars
         ReservedAccount::new_active(sysvar::clock::id()),
-        ReservedAccount::new_pending(sysvar::epoch_rewards::id(), feature_set::add_new_reserved_account_keys::id()),
+        ReservedAccount::new_pending(sysvar::epoch_rewards::id(), add_new_reserved_account_keys::id()),
         ReservedAccount::new_active(sysvar::epoch_schedule::id()),
         #[allow(deprecated)]
         ReservedAccount::new_active(sysvar::fees::id()),
         ReservedAccount::new_active(sysvar::instructions::id()),
-        ReservedAccount::new_pending(sysvar::last_restart_slot::id(), feature_set::add_new_reserved_account_keys::id()),
+        ReservedAccount::new_pending(sysvar::last_restart_slot::id(), add_new_reserved_account_keys::id()),
         #[allow(deprecated)]
         ReservedAccount::new_active(sysvar::recent_blockhashes::id()),
         ReservedAccount::new_active(sysvar::rent::id()),
@@ -178,7 +186,7 @@ lazy_static! {
 
         // other
         ReservedAccount::new_active(native_loader::id()),
-        ReservedAccount::new_pending(sysvar::id(), feature_set::add_new_reserved_account_keys::id()),
+        ReservedAccount::new_pending(sysvar::id(), add_new_reserved_account_keys::id()),
     ].to_vec();
 }
 

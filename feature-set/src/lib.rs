@@ -1225,10 +1225,13 @@ lazy_static! {
 /// `FeatureSet` holds the set of currently active/inactive runtime features
 #[cfg_attr(feature = "frozen-abi", derive(solana_frozen_abi_macro::AbiExample))]
 #[derive(Debug, Clone, Eq, PartialEq)]
+#[deprecated]
+#[allow(deprecated)]
 pub struct FeatureSet {
     pub active: AHashMap<Pubkey, u64>,
     pub inactive: AHashSet<Pubkey>,
 }
+#[allow(deprecated)]
 impl Default for FeatureSet {
     fn default() -> Self {
         // All features disabled
@@ -1238,6 +1241,7 @@ impl Default for FeatureSet {
         }
     }
 }
+#[allow(deprecated)]
 impl FeatureSet {
     pub fn is_active(&self, feature_id: &Pubkey) -> bool {
         self.active.contains_key(feature_id)
@@ -1291,8 +1295,18 @@ impl FeatureSet {
             .map(|slot| epoch_schedule.get_epoch(slot))
     }
 }
+#[allow(deprecated)]
+impl From<FeatureSet> for solana_feature_set_interface::FeatureSet {
+    fn from(feature_set: FeatureSet) -> Self {
+        Self {
+            active: feature_set.active,
+            inactive: feature_set.inactive,
+        }
+    }
+}
 
 #[cfg(test)]
+#[allow(deprecated)]
 mod test {
     use super::*;
 

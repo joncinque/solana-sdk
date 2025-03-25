@@ -1,6 +1,6 @@
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 use {
-    lazy_static::lazy_static, solana_feature_set::FeatureSet,
+    lazy_static::lazy_static, solana_feature_set_interface::FeatureSet,
     solana_message::compiled_instruction::CompiledInstruction,
     solana_precompile_error::PrecompileError, solana_pubkey::Pubkey,
 };
@@ -46,6 +46,10 @@ impl Precompile {
     }
 }
 
+mod enable_secp256r1_precompile {
+    solana_pubkey::declare_id!("srremy31J5Y25FrAApwVb9kZcfXbusYMMsvTK9aWv5q");
+}
+
 lazy_static! {
     /// The list of all precompiled programs
     static ref PRECOMPILES: Vec<Precompile> = vec![
@@ -61,7 +65,7 @@ lazy_static! {
         ),
         Precompile::new(
             solana_sdk_ids::secp256r1_program::id(),
-            Some(solana_feature_set::enable_secp256r1_precompile::id()),
+            Some(enable_secp256r1_precompile::id()),
             solana_secp256r1_program::verify,
         )
     ];
@@ -112,4 +116,17 @@ pub fn verify_if_precompile(
         }
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn check_feature() {
+        assert_eq!(
+            enable_secp256r1_precompile::id(),
+            solana_reserved_account_keys::enable_secp256r1_precompile::id()
+        );
+    }
 }

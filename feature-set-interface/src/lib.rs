@@ -7,7 +7,7 @@ use {
 
 /// `FeatureSet` holds the set of currently active/inactive runtime features
 #[cfg_attr(feature = "frozen-abi", derive(solana_frozen_abi_macro::AbiExample))]
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Default, Clone, Eq, PartialEq)]
 pub struct FeatureSet {
     pub active: AHashMap<Pubkey, u64>,
     pub inactive: AHashSet<Pubkey>,

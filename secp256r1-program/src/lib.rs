@@ -50,7 +50,7 @@ mod target_arch {
             pkey::{PKey, Private},
             sign::{Signer, Verifier},
         },
-        solana_feature_set::FeatureSet,
+        solana_feature_set_interface::FeatureSet,
         solana_instruction::Instruction,
         solana_precompile_error::PrecompileError,
     };
@@ -329,7 +329,7 @@ mod target_arch {
     mod test {
         use {
             super::*,
-            solana_feature_set::FeatureSet,
+            solana_feature_set_interface::FeatureSet,
             solana_sdk::{
                 hash::Hash,
                 signature::{Keypair, Signer},
@@ -350,11 +350,7 @@ mod target_arch {
             instruction_data[0..SIGNATURE_OFFSETS_START].copy_from_slice(bytes_of(&num_signatures));
             instruction_data[SIGNATURE_OFFSETS_START..DATA_START]
                 .copy_from_slice(bytes_of(offsets));
-            verify(
-                &instruction_data,
-                &[&[0u8; 100]],
-                &FeatureSet::all_enabled(),
-            )
+            verify(&instruction_data, &[&[0u8; 100]], &FeatureSet::default())
         }
 
         #[test]
@@ -369,11 +365,7 @@ mod target_arch {
             instruction_data.truncate(instruction_data.len() - 1);
 
             assert_eq!(
-                verify(
-                    &instruction_data,
-                    &[&[0u8; 100]],
-                    &FeatureSet::all_enabled()
-                ),
+                verify(&instruction_data, &[&[0u8; 100]], &FeatureSet::default()),
                 Err(PrecompileError::InvalidInstructionDataSize)
             );
 
@@ -412,7 +404,7 @@ mod target_arch {
             // Test data.len() < SIGNATURE_OFFSETS_START
             let small_data = vec![0u8; SIGNATURE_OFFSETS_START - 1];
             assert_eq!(
-                verify(&small_data, &[&[]], &FeatureSet::all_enabled()),
+                verify(&small_data, &[&[]], &FeatureSet::default()),
                 Err(PrecompileError::InvalidInstructionDataSize)
             );
 
@@ -420,7 +412,7 @@ mod target_arch {
             let mut zero_sigs_data = vec![0u8; DATA_START];
             zero_sigs_data[0] = 0; // Set num_signatures to 0
             assert_eq!(
-                verify(&zero_sigs_data, &[&[]], &FeatureSet::all_enabled()),
+                verify(&zero_sigs_data, &[&[]], &FeatureSet::default()),
                 Err(PrecompileError::InvalidInstructionDataSize)
             );
 
@@ -428,7 +420,7 @@ mod target_arch {
             let mut too_many_sigs = vec![0u8; DATA_START];
             too_many_sigs[0] = 9; // Set num_signatures to 9
             assert_eq!(
-                verify(&too_many_sigs, &[&[]], &FeatureSet::all_enabled()),
+                verify(&too_many_sigs, &[&[]], &FeatureSet::default()),
                 Err(PrecompileError::InvalidInstructionDataSize)
             );
         }
@@ -525,7 +517,7 @@ mod target_arch {
             let signing_key = EcKey::generate(&group).unwrap();
             let mut instruction = new_secp256r1_instruction(message_arr, signing_key).unwrap();
             let mint_keypair = Keypair::new();
-            let feature_set = FeatureSet::all_enabled();
+            let feature_set = FeatureSet::default();
 
             let tx = Transaction::new_signed_with_payer(
                 &[instruction.clone()],
@@ -560,7 +552,7 @@ mod target_arch {
             let mut instruction = new_secp256r1_instruction(message_arr, signing_key).unwrap();
 
             // To double check that the untampered low-S value signature passes
-            let feature_set = FeatureSet::all_enabled();
+            let feature_set = FeatureSet::default();
             let tx_pass = verify(
                 instruction.data.as_slice(),
                 &[instruction.data.as_slice()],
@@ -628,7 +620,7 @@ mod target_arch {
                         Hash::default(),
                     );
 
-                    let feature_set = FeatureSet::all_enabled();
+                    let feature_set = FeatureSet::default();
                     assert!(tx.verify_precompiles(&feature_set).is_ok());
                     break;
                 }
@@ -738,7 +730,7 @@ mod target_arch {
 
 #[cfg(any(target_arch = "wasm32", target_os = "solana"))]
 mod target_arch {
-    use {solana_feature_set::FeatureSet, solana_precompile_error::PrecompileError};
+    use {solana_feature_set_interface::FeatureSet, solana_precompile_error::PrecompileError};
 
     pub fn verify(
         _data: &[u8],

@@ -6,7 +6,7 @@ use {
     bytemuck::bytes_of,
     bytemuck_derive::{Pod, Zeroable},
     ed25519_dalek::{ed25519::signature::Signature, Signer, Verifier},
-    solana_feature_set::{ed25519_precompile_verify_strict, FeatureSet},
+    solana_feature_set_interface::FeatureSet,
     solana_instruction::Instruction,
     solana_precompile_error::PrecompileError,
 };
@@ -17,6 +17,11 @@ pub const SIGNATURE_OFFSETS_SERIALIZED_SIZE: usize = 14;
 // bytemuck requires structures to be aligned
 pub const SIGNATURE_OFFSETS_START: usize = 2;
 pub const DATA_START: usize = SIGNATURE_OFFSETS_SERIALIZED_SIZE + SIGNATURE_OFFSETS_START;
+
+/// Copy from agave-feature-set
+mod ed25519_precompile_verify_strict {
+    solana_pubkey::declare_id!("ed9tNscbWLYBooxWA7FE2B5KHWs8A6sxfY8EzezEcoo");
+}
 
 #[derive(Default, Debug, Copy, Clone, Zeroable, Pod, Eq, PartialEq)]
 #[repr(C)]
@@ -220,12 +225,18 @@ pub mod test {
         ed25519_dalek::Signer as EdSigner,
         hex,
         rand0_7::{thread_rng, Rng},
-        solana_feature_set::FeatureSet,
+        solana_feature_set_interface::FeatureSet,
         solana_hash::Hash,
         solana_keypair::Keypair,
         solana_sdk::transaction::Transaction,
         solana_signer::Signer,
     };
+
+    fn feature_set_with_strict() -> FeatureSet {
+        let mut feature_set = FeatureSet::default();
+        feature_set.activate(&ed25519_precompile_verify_strict::id(), 0);
+        feature_set
+    }
 
     pub fn new_ed25519_instruction_raw(
         pubkey: &[u8],
@@ -297,7 +308,7 @@ pub mod test {
         verify(
             &instruction_data,
             &[&[0u8; 100]],
-            &FeatureSet::all_enabled(),
+            &feature_set_with_strict(),
         )
     }
 
@@ -315,7 +326,7 @@ pub mod test {
             verify(
                 &instruction_data,
                 &[&[0u8; 100]],
-                &FeatureSet::all_enabled(),
+                &feature_set_with_strict(),
             ),
             Err(PrecompileError::InvalidInstructionDataSize)
         );
@@ -441,7 +452,7 @@ pub mod test {
         let message_arr = b"hello";
         let mut instruction = new_ed25519_instruction(&privkey, message_arr);
         let mint_keypair = Keypair::new();
-        let feature_set = FeatureSet::all_enabled();
+        let feature_set = feature_set_with_strict();
 
         let tx = Transaction::new_signed_with_payer(
             &[instruction.clone()],
@@ -512,7 +523,7 @@ pub mod test {
         }
 
         let mint_keypair = Keypair::new();
-        let feature_set = FeatureSet::all_enabled();
+        let feature_set = feature_set_with_strict();
 
         let tx = Transaction::new_signed_with_payer(
             &[instruction.clone()],
@@ -560,7 +571,7 @@ pub mod test {
         let feature_set = FeatureSet::default();
         assert!(tx.verify_precompiles(&feature_set).is_ok());
 
-        let feature_set = FeatureSet::all_enabled();
+        let feature_set = feature_set_with_strict();
         assert!(tx.verify_precompiles(&feature_set).is_ok());
 
         // malleable sig: verify_strict does NOT pass
@@ -583,7 +594,7 @@ pub mod test {
         let feature_set = FeatureSet::default();
         assert!(tx.verify_precompiles(&feature_set).is_ok());
 
-        let feature_set = FeatureSet::all_enabled();
+        let feature_set = feature_set_with_strict();
         assert!(tx.verify_precompiles(&feature_set).is_err()); // verify_strict does NOT pass
     }
 }
