@@ -20,9 +20,6 @@ solana-sdk-ids = { workspace = true }
 solana-secp256k1-program = { workspace = true, features = ["bincode"] }
 solana-secp256r1-program = { workspace = true, default-features = false }
 
-[dev-dependencies]
-solana-reserved-account-keys = { workspace = true }
-
 [features]
 # Enables the "vendored" feature of openssl inside of secp256r1-program
 openssl-vendored = ["solana-secp256r1-program/openssl-vendored"]

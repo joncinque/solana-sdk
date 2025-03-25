@@ -3335,7 +3335,6 @@ dependencies = [
  "solana-message",
  "solana-precompile-error",
  "solana-pubkey",
- "solana-reserved-account-keys",
  "solana-sdk-ids",
  "solana-secp256k1-program",
  "solana-secp256r1-program",
@@ -3738,6 +3737,8 @@ dependencies = [
  "solana-instruction",
  "solana-logger",
  "solana-precompile-error",
+ "solana-pubkey",
+ "solana-reserved-account-keys",
  "solana-sdk",
  "solana-sdk-ids",
 ]

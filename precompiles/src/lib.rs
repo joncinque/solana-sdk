@@ -46,10 +46,6 @@ impl Precompile {
     }
 }
 
-mod enable_secp256r1_precompile {
-    solana_pubkey::declare_id!("srremy31J5Y25FrAApwVb9kZcfXbusYMMsvTK9aWv5q");
-}
-
 lazy_static! {
     /// The list of all precompiled programs
     static ref PRECOMPILES: Vec<Precompile> = vec![
@@ -65,7 +61,7 @@ lazy_static! {
         ),
         Precompile::new(
             solana_sdk_ids::secp256r1_program::id(),
-            Some(enable_secp256r1_precompile::id()),
+            Some(solana_secp256r1_program::enable_secp256r1_precompile::id()),
             solana_secp256r1_program::verify,
         )
     ];
@@ -116,17 +112,4 @@ pub fn verify_if_precompile(
         }
     }
     Ok(())
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn check_feature() {
-        assert_eq!(
-            enable_secp256r1_precompile::id(),
-            solana_reserved_account_keys::enable_secp256r1_precompile::id()
-        );
-    }
 }

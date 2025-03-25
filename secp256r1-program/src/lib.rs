@@ -37,6 +37,10 @@ pub struct Secp256r1SignatureOffsets {
     pub message_instruction_index: u16,
 }
 
+pub mod enable_secp256r1_precompile {
+    solana_pubkey::declare_id!("srremy31J5Y25FrAApwVb9kZcfXbusYMMsvTK9aWv5q");
+}
+
 #[cfg(all(not(target_arch = "wasm32"), not(target_os = "solana")))]
 mod target_arch {
     use {
@@ -517,7 +521,8 @@ mod target_arch {
             let signing_key = EcKey::generate(&group).unwrap();
             let mut instruction = new_secp256r1_instruction(message_arr, signing_key).unwrap();
             let mint_keypair = Keypair::new();
-            let feature_set = FeatureSet::default();
+            let mut feature_set = FeatureSet::default();
+            feature_set.activate(&crate::enable_secp256r1_precompile::id(), 0);
 
             let tx = Transaction::new_signed_with_payer(
                 &[instruction.clone()],
@@ -724,6 +729,14 @@ mod target_arch {
                 .checked_mul(&our_half_order, &BigNum::from_u32(2).unwrap(), &mut ctx)
                 .unwrap();
             assert_eq!(double_half_order, expected_order_minus_one);
+        }
+
+        #[test]
+        fn check_feature() {
+            assert_eq!(
+                crate::enable_secp256r1_precompile::id(),
+                solana_reserved_account_keys::enable_secp256r1_precompile::id()
+            );
         }
     }
 }
