@@ -43,16 +43,6 @@ impl Default for SignatureProjective {
 
 #[cfg(not(target_os = "solana"))]
 impl SignatureProjective {
-    /// Verify the signature against any convertible public key type and a message
-    pub fn verify<P>(&self, pubkey: &P, message: &[u8]) -> Result<bool, BlsError>
-    where
-        for<'a> &'a P: TryInto<PubkeyProjective>,
-        for<'a> <&'a P as TryInto<PubkeyProjective>>::Error: Into<BlsError>,
-    {
-        let pubkey_projective: PubkeyProjective = pubkey.try_into().map_err(Into::into)?;
-        Ok(pubkey_projective._verify_signature(self, message))
-    }
-
     /// Aggregate a list of signatures into an existing aggregate
     #[allow(clippy::arithmetic_side_effects)]
     pub fn aggregate_with<'a, I>(&mut self, signatures: I)
@@ -155,19 +145,6 @@ pub struct SignatureCompressed(
     pub  [u8; BLS_SIGNATURE_COMPRESSED_SIZE],
 );
 
-#[cfg(not(target_os = "solana"))]
-impl SignatureCompressed {
-    /// Verify the signature against any convertible public key type and a message
-    pub fn verify<P>(&self, pubkey: &P, message: &[u8]) -> Result<bool, BlsError>
-    where
-        for<'a> &'a P: TryInto<PubkeyProjective>,
-        for<'a> <&'a P as TryInto<PubkeyProjective>>::Error: Into<BlsError>,
-    {
-        let signature_projective: SignatureProjective = self.try_into()?;
-        signature_projective.verify(pubkey, message)
-    }
-}
-
 impl Default for SignatureCompressed {
     fn default() -> Self {
         Self([0; BLS_SIGNATURE_COMPRESSED_SIZE])
@@ -216,19 +193,6 @@ pub struct Signature(
     #[cfg_attr(feature = "serde", serde_as(as = "[_; BLS_SIGNATURE_AFFINE_SIZE]"))]
     pub  [u8; BLS_SIGNATURE_AFFINE_SIZE],
 );
-
-#[cfg(not(target_os = "solana"))]
-impl Signature {
-    /// Verify the signature against any convertible public key type and a message
-    pub fn verify<P>(&self, pubkey: &P, message: &[u8]) -> Result<bool, BlsError>
-    where
-        for<'a> &'a P: TryInto<PubkeyProjective>,
-        for<'a> <&'a P as TryInto<PubkeyProjective>>::Error: Into<BlsError>,
-    {
-        let signature_projective: SignatureProjective = self.try_into()?;
-        signature_projective.verify(pubkey, message)
-    }
-}
 
 impl Default for Signature {
     fn default() -> Self {
@@ -311,57 +275,10 @@ mod bytemuck_impls {
 mod tests {
     use {
         super::*,
-        crate::{
-            keypair::Keypair,
-            pubkey::{Pubkey, PubkeyCompressed},
-        },
+        crate::{keypair::Keypair, pubkey::verify_signature},
         core::str::FromStr,
         std::{string::ToString, vec},
     };
-
-    #[test]
-    fn test_signature_verification() {
-        let keypair = Keypair::new();
-        let test_message = b"test message";
-        let signature_projective = keypair.sign(test_message);
-
-        let pubkey_projective = keypair.public;
-        let pubkey_affine: Pubkey = pubkey_projective.into();
-        let pubkey_compressed: PubkeyCompressed = pubkey_affine.try_into().unwrap();
-
-        let signature_affine: Signature = signature_projective.into();
-        let signature_compressed: SignatureCompressed = signature_affine.try_into().unwrap();
-
-        assert!(signature_projective
-            .verify(&pubkey_projective, test_message)
-            .unwrap());
-        assert!(signature_affine
-            .verify(&pubkey_projective, test_message)
-            .unwrap());
-        assert!(signature_compressed
-            .verify(&pubkey_projective, test_message)
-            .unwrap());
-
-        assert!(signature_projective
-            .verify(&pubkey_affine, test_message)
-            .unwrap());
-        assert!(signature_affine
-            .verify(&pubkey_affine, test_message)
-            .unwrap());
-        assert!(signature_compressed
-            .verify(&pubkey_affine, test_message)
-            .unwrap());
-
-        assert!(signature_projective
-            .verify(&pubkey_compressed, test_message)
-            .unwrap());
-        assert!(signature_affine
-            .verify(&pubkey_compressed, test_message)
-            .unwrap());
-        assert!(signature_compressed
-            .verify(&pubkey_compressed, test_message)
-            .unwrap());
-    }
 
     #[test]
     fn test_signature_aggregate() {
@@ -388,17 +305,11 @@ mod tests {
 
         let keypair0 = Keypair::new();
         let signature0 = keypair0.sign(test_message);
-        assert!(keypair0
-            .public
-            .verify_signature(&signature0, test_message)
-            .unwrap());
+        assert!(verify_signature(&keypair0.public, &signature0, test_message).unwrap());
 
         let keypair1 = Keypair::new();
         let signature1 = keypair1.secret.sign(test_message);
-        assert!(keypair1
-            .public
-            .verify_signature(&signature1, test_message)
-            .unwrap());
+        assert!(verify_signature(&keypair1.public, &signature1, test_message).unwrap());
 
         // basic case
         assert!(SignatureProjective::aggregate_verify(

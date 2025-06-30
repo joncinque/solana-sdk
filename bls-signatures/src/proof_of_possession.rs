@@ -2,7 +2,7 @@
 use bytemuck::{Pod, PodInOption, Zeroable, ZeroableInOption};
 #[cfg(not(target_os = "solana"))]
 use {
-    crate::{error::BlsError, pubkey::PubkeyProjective},
+    crate::error::BlsError,
     blstrs::{G2Affine, G2Projective},
     core::convert::Infallible,
 };
@@ -37,19 +37,6 @@ pub const BLS_PROOF_OF_POSSESSKON_AFFINE_BASE64_SIZE: usize = 256;
 #[cfg(not(target_os = "solana"))]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct ProofOfPossessionProjective(pub(crate) G2Projective);
-
-#[cfg(not(target_os = "solana"))]
-impl ProofOfPossessionProjective {
-    /// Verify the proof of possession against any convertible public key type
-    pub fn verify<P>(&self, pubkey: &P) -> Result<bool, BlsError>
-    where
-        for<'a> &'a P: TryInto<PubkeyProjective>,
-        for<'a> <&'a P as TryInto<PubkeyProjective>>::Error: Into<BlsError>,
-    {
-        let pubkey_projective: PubkeyProjective = pubkey.try_into().map_err(Into::into)?;
-        Ok(pubkey_projective._verify_proof_of_possession(self))
-    }
-}
 
 #[cfg(not(target_os = "solana"))]
 impl From<ProofOfPossessionProjective> for ProofOfPossession {
@@ -99,19 +86,6 @@ pub struct ProofOfPossessionCompressed(
     pub [u8; BLS_PROOF_OF_POSSESSION_COMPRESSED_SIZE],
 );
 
-#[cfg(not(target_os = "solana"))]
-impl ProofOfPossessionCompressed {
-    /// Verify the proof of possession against any convertible public key type
-    pub fn verify<P>(&self, pubkey: &P) -> Result<bool, BlsError>
-    where
-        for<'a> &'a P: TryInto<PubkeyProjective>,
-        for<'a> <&'a P as TryInto<PubkeyProjective>>::Error: Into<BlsError>,
-    {
-        let proof_projective: ProofOfPossessionProjective = self.try_into()?;
-        proof_projective.verify(pubkey)
-    }
-}
-
 impl Default for ProofOfPossessionCompressed {
     fn default() -> Self {
         Self([0; BLS_PROOF_OF_POSSESSION_COMPRESSED_SIZE])
@@ -143,19 +117,6 @@ pub struct ProofOfPossession(
     )]
     pub [u8; BLS_PROOF_OF_POSSESSION_AFFINE_SIZE],
 );
-
-#[cfg(not(target_os = "solana"))]
-impl ProofOfPossession {
-    /// Verify the proof of possession against any convertible public key type
-    pub fn verify<P>(&self, pubkey: &P) -> Result<bool, BlsError>
-    where
-        for<'a> &'a P: TryInto<PubkeyProjective>,
-        for<'a> <&'a P as TryInto<PubkeyProjective>>::Error: Into<BlsError>,
-    {
-        let proof_projective: ProofOfPossessionProjective = self.try_into()?;
-        proof_projective.verify(pubkey)
-    }
-}
 
 #[cfg(not(target_os = "solana"))]
 impl<'a> TryFrom<&'a ProofOfPossessionProjective> for ProofOfPossessionProjective {
@@ -264,40 +225,7 @@ mod bytemuck_impls {
 
 #[cfg(test)]
 mod tests {
-    use {
-        super::*,
-        crate::{
-            keypair::Keypair,
-            pubkey::{Pubkey, PubkeyCompressed},
-        },
-        core::str::FromStr,
-        std::string::ToString,
-    };
-
-    #[test]
-    fn test_proof_of_possession() {
-        let keypair = Keypair::new();
-        let proof_projective = keypair.proof_of_possession();
-
-        let pubkey_projective = keypair.public;
-        let pubkey_affine: Pubkey = pubkey_projective.into();
-        let pubkey_compressed: PubkeyCompressed = pubkey_affine.try_into().unwrap();
-
-        let proof_affine: ProofOfPossession = proof_projective.into();
-        let proof_compressed: ProofOfPossessionCompressed = proof_affine.try_into().unwrap();
-
-        assert!(proof_projective.verify(&pubkey_projective).unwrap());
-        assert!(proof_affine.verify(&pubkey_projective).unwrap());
-        assert!(proof_compressed.verify(&pubkey_projective).unwrap());
-
-        assert!(proof_projective.verify(&pubkey_affine).unwrap());
-        assert!(proof_affine.verify(&pubkey_affine).unwrap());
-        assert!(proof_compressed.verify(&pubkey_affine).unwrap());
-
-        assert!(proof_projective.verify(&pubkey_compressed).unwrap());
-        assert!(proof_affine.verify(&pubkey_compressed).unwrap());
-        assert!(proof_compressed.verify(&pubkey_compressed).unwrap());
-    }
+    use {super::*, core::str::FromStr, std::string::ToString};
 
     #[test]
     fn proof_of_possession_from_str() {

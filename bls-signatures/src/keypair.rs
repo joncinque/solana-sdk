@@ -1,7 +1,7 @@
 use crate::{
     error::BlsError,
     proof_of_possession::ProofOfPossessionProjective,
-    pubkey::{PubkeyProjective, BLS_PUBLIC_KEY_AFFINE_SIZE},
+    pubkey::{verify_signature, PubkeyProjective, BLS_PUBLIC_KEY_AFFINE_SIZE},
     secret_key::{SecretKey, BLS_SECRET_KEY_SIZE},
     signature::SignatureProjective,
 };
@@ -68,7 +68,7 @@ impl Keypair {
         for<'a> &'a S: TryInto<SignatureProjective>,
         for<'a> <&'a S as TryInto<SignatureProjective>>::Error: Into<BlsError>,
     {
-        self.public.verify_signature(signature, message)
+        verify_signature(&self.public, signature, message)
     }
 }
 

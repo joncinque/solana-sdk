@@ -35,6 +35,38 @@ pub const BLS_PUBLIC_KEY_AFFINE_SIZE: usize = 96;
 /// Size of a BLS public key in an affine point representation in base64
 pub const BLS_PUBLIC_KEY_AFFINE_BASE64_SIZE: usize = 256;
 
+/// Verify a proof of possession against a public key
+#[cfg(not(target_os = "solana"))]
+pub fn verify_proof_of_possession<PK, P>(public_key: &PK, proof: &P) -> Result<bool, BlsError>
+where
+    for<'a> &'a PK: TryInto<PubkeyProjective>,
+    for<'a> <&'a PK as TryInto<PubkeyProjective>>::Error: Into<BlsError>,
+    for<'a> &'a P: TryInto<ProofOfPossessionProjective>,
+    for<'a> <&'a P as TryInto<ProofOfPossessionProjective>>::Error: Into<BlsError>,
+{
+    let proof_projective: ProofOfPossessionProjective = proof.try_into().map_err(Into::into)?;
+    let pubkey_projective: PubkeyProjective = public_key.try_into().map_err(Into::into)?;
+    Ok(pubkey_projective._verify_proof_of_possession(&proof_projective))
+}
+
+/// Verify a signature and a message against a public key
+#[cfg(not(target_os = "solana"))]
+pub fn verify_signature<PK, S>(
+    public_key: &PK,
+    signature: &S,
+    message: &[u8],
+) -> Result<bool, BlsError>
+where
+    for<'a> &'a PK: TryInto<PubkeyProjective>,
+    for<'a> <&'a PK as TryInto<PubkeyProjective>>::Error: Into<BlsError>,
+    for<'a> &'a S: TryInto<SignatureProjective>,
+    for<'a> <&'a S as TryInto<SignatureProjective>>::Error: Into<BlsError>,
+{
+    let signature_projective: SignatureProjective = signature.try_into().map_err(Into::into)?;
+    let pubkey_projective: PubkeyProjective = public_key.try_into().map_err(Into::into)?;
+    Ok(pubkey_projective._verify_signature(&signature_projective, message))
+}
+
 /// A BLS public key in a projective point representation
 #[cfg(not(target_os = "solana"))]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -65,26 +97,6 @@ impl PubkeyProjective {
         let hashed_pubkey_bytes = hash_pubkey_to_g2(self);
         pairing(&self.0.into(), &hashed_pubkey_bytes.into())
             == pairing(&G1Affine::generator(), &proof.0.into())
-    }
-
-    /// Verify a signature and a message against a public key
-    pub fn verify_signature<S>(&self, signature: &S, message: &[u8]) -> Result<bool, BlsError>
-    where
-        for<'a> &'a S: TryInto<SignatureProjective>,
-        for<'a> <&'a S as TryInto<SignatureProjective>>::Error: Into<BlsError>,
-    {
-        let signature_projective: SignatureProjective = signature.try_into().map_err(Into::into)?;
-        Ok(self._verify_signature(&signature_projective, message))
-    }
-
-    /// Verify a proof of possession against a public key
-    pub fn verify_proof_of_possession<P>(&self, proof: &P) -> Result<bool, BlsError>
-    where
-        for<'a> &'a P: TryInto<ProofOfPossessionProjective>,
-        for<'a> <&'a P as TryInto<ProofOfPossessionProjective>>::Error: Into<BlsError>,
-    {
-        let proof_projective: ProofOfPossessionProjective = proof.try_into().map_err(Into::into)?;
-        Ok(self._verify_proof_of_possession(&proof_projective))
     }
 
     /// Construct a corresponding `BlsPubkey` for a `BlsSecretKey`
@@ -202,29 +214,6 @@ pub struct PubkeyCompressed(
     pub [u8; BLS_PUBLIC_KEY_COMPRESSED_SIZE],
 );
 
-#[cfg(not(target_os = "solana"))]
-impl PubkeyCompressed {
-    /// Verify a signature and a message against a public key
-    pub fn verify_signature<S>(&self, signature: &S, message: &[u8]) -> Result<bool, BlsError>
-    where
-        for<'a> &'a S: TryInto<SignatureProjective>,
-        for<'a> <&'a S as TryInto<SignatureProjective>>::Error: Into<BlsError>,
-    {
-        let pubkey_projective: PubkeyProjective = self.try_into()?;
-        pubkey_projective.verify_signature(signature, message)
-    }
-
-    /// Verify a proof of possession against a public key
-    pub fn verify_proof_of_possession<P>(&self, proof: &P) -> Result<bool, BlsError>
-    where
-        for<'a> &'a P: TryInto<ProofOfPossessionProjective>,
-        for<'a> <&'a P as TryInto<ProofOfPossessionProjective>>::Error: Into<BlsError>,
-    {
-        let pubkey_projective: PubkeyProjective = self.try_into()?;
-        pubkey_projective.verify_proof_of_possession(proof)
-    }
-}
-
 impl Default for PubkeyCompressed {
     fn default() -> Self {
         Self([0; BLS_PUBLIC_KEY_COMPRESSED_SIZE])
@@ -253,29 +242,6 @@ pub struct Pubkey(
     #[cfg_attr(feature = "serde", serde_as(as = "[_; BLS_PUBLIC_KEY_AFFINE_SIZE]"))]
     pub  [u8; BLS_PUBLIC_KEY_AFFINE_SIZE],
 );
-
-#[cfg(not(target_os = "solana"))]
-impl Pubkey {
-    /// Verify a signature and a message against a public key
-    pub fn verify_signature<S>(&self, signature: &S, message: &[u8]) -> Result<bool, BlsError>
-    where
-        for<'a> &'a S: TryInto<SignatureProjective>,
-        for<'a> <&'a S as TryInto<SignatureProjective>>::Error: Into<BlsError>,
-    {
-        let pubkey_projective: PubkeyProjective = self.try_into()?;
-        pubkey_projective.verify_signature(signature, message)
-    }
-
-    /// Verify a proof of possession against a public key
-    pub fn verify_proof_of_possession<P>(&self, proof: &P) -> Result<bool, BlsError>
-    where
-        for<'a> &'a P: TryInto<ProofOfPossessionProjective>,
-        for<'a> <&'a P as TryInto<ProofOfPossessionProjective>>::Error: Into<BlsError>,
-    {
-        let pubkey_projective: PubkeyProjective = self.try_into()?;
-        pubkey_projective.verify_proof_of_possession(proof)
-    }
-}
 
 impl Default for Pubkey {
     fn default() -> Self {
@@ -399,35 +365,17 @@ mod tests {
         let signature_affine: Signature = signature_projective.into();
         let signature_compressed: SignatureCompressed = signature_affine.try_into().unwrap();
 
-        assert!(pubkey_projective
-            .verify_signature(&signature_projective, test_message)
-            .unwrap());
-        assert!(pubkey_affine
-            .verify_signature(&signature_projective, test_message)
-            .unwrap());
-        assert!(pubkey_compressed
-            .verify_signature(&signature_projective, test_message)
-            .unwrap());
+        assert!(verify_signature(&pubkey_projective, &signature_projective, test_message).unwrap());
+        assert!(verify_signature(&pubkey_affine, &signature_projective, test_message).unwrap());
+        assert!(verify_signature(&pubkey_compressed, &signature_projective, test_message).unwrap());
 
-        assert!(pubkey_projective
-            .verify_signature(&signature_affine, test_message)
-            .unwrap());
-        assert!(pubkey_affine
-            .verify_signature(&signature_affine, test_message)
-            .unwrap());
-        assert!(pubkey_compressed
-            .verify_signature(&signature_affine, test_message)
-            .unwrap());
+        assert!(verify_signature(&pubkey_projective, &signature_affine, test_message).unwrap());
+        assert!(verify_signature(&pubkey_affine, &signature_affine, test_message).unwrap());
+        assert!(verify_signature(&pubkey_compressed, &signature_affine, test_message).unwrap());
 
-        assert!(pubkey_projective
-            .verify_signature(&signature_compressed, test_message)
-            .unwrap());
-        assert!(pubkey_affine
-            .verify_signature(&signature_compressed, test_message)
-            .unwrap());
-        assert!(pubkey_compressed
-            .verify_signature(&signature_compressed, test_message)
-            .unwrap());
+        assert!(verify_signature(&pubkey_projective, &signature_compressed, test_message).unwrap());
+        assert!(verify_signature(&pubkey_affine, &signature_compressed, test_message).unwrap());
+        assert!(verify_signature(&pubkey_compressed, &signature_compressed, test_message).unwrap());
     }
 
     #[test]
@@ -442,35 +390,17 @@ mod tests {
         let proof_affine: ProofOfPossession = proof_projective.into();
         let proof_compressed: ProofOfPossessionCompressed = proof_affine.try_into().unwrap();
 
-        assert!(pubkey_projective
-            .verify_proof_of_possession(&proof_projective)
-            .unwrap());
-        assert!(pubkey_affine
-            .verify_proof_of_possession(&proof_projective)
-            .unwrap());
-        assert!(pubkey_compressed
-            .verify_proof_of_possession(&proof_projective)
-            .unwrap());
+        assert!(verify_proof_of_possession(&pubkey_projective, &proof_projective).unwrap());
+        assert!(verify_proof_of_possession(&pubkey_affine, &proof_projective).unwrap());
+        assert!(verify_proof_of_possession(&pubkey_compressed, &proof_projective).unwrap());
 
-        assert!(pubkey_projective
-            .verify_proof_of_possession(&proof_affine)
-            .unwrap());
-        assert!(pubkey_affine
-            .verify_proof_of_possession(&proof_affine)
-            .unwrap());
-        assert!(pubkey_compressed
-            .verify_proof_of_possession(&proof_affine)
-            .unwrap());
+        assert!(verify_proof_of_possession(&pubkey_projective, &proof_affine).unwrap());
+        assert!(verify_proof_of_possession(&pubkey_affine, &proof_affine).unwrap());
+        assert!(verify_proof_of_possession(&pubkey_compressed, &proof_affine).unwrap());
 
-        assert!(pubkey_projective
-            .verify_proof_of_possession(&proof_compressed)
-            .unwrap());
-        assert!(pubkey_affine
-            .verify_proof_of_possession(&proof_compressed)
-            .unwrap());
-        assert!(pubkey_compressed
-            .verify_proof_of_possession(&proof_compressed)
-            .unwrap());
+        assert!(verify_proof_of_possession(&pubkey_projective, &proof_compressed).unwrap());
+        assert!(verify_proof_of_possession(&pubkey_affine, &proof_compressed).unwrap());
+        assert!(verify_proof_of_possession(&pubkey_compressed, &proof_compressed).unwrap());
     }
 
     #[test]
