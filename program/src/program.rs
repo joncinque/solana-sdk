@@ -10,14 +10,11 @@
 //! [`invoke_signed`]: invoke_signed
 //! [cpi]: https://solana.com/docs/core/cpi
 
-pub use solana_cpi::MAX_RETURN_DATA;
-use {
-    crate::{
-        account_info::AccountInfo, entrypoint::ProgramResult, instruction::Instruction,
-        pubkey::Pubkey, stable_layout::stable_instruction::StableInstruction,
-    },
-    solana_clock::Epoch,
+use crate::{
+    account_info::AccountInfo, entrypoint::ProgramResult, instruction::Instruction, pubkey::Pubkey,
+    stable_layout::stable_instruction::StableInstruction,
 };
+pub use solana_cpi::MAX_RETURN_DATA;
 
 /// Like [`solana_cpi::invoke`], but with support
 /// for overwriting the `sol_invoke_signed` syscall stub.
@@ -222,7 +219,6 @@ pub fn check_type_assumptions() {
             data: Rc::new(RefCell::new(&mut data)),
             owner: &owner,
             executable: true,
-            rent_epoch: 42,
         };
         let account_info_addr = &account_info as *const _ as u64;
 
@@ -252,13 +248,6 @@ pub fn check_type_assumptions() {
         let owner_ptr = (account_info_addr + 24) as *const &Pubkey;
         unsafe {
             assert_eq!(**owner_ptr, owner);
-        }
-
-        // rent_epoch
-        assert_eq!(offset_of!(AccountInfo, rent_epoch), 32);
-        let renbt_epoch_ptr = (account_info_addr + 32) as *const Epoch;
-        unsafe {
-            assert_eq!(*renbt_epoch_ptr, 42);
         }
 
         // is_signer
