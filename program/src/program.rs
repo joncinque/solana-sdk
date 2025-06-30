@@ -251,22 +251,22 @@ pub fn check_type_assumptions() {
         }
 
         // is_signer
-        assert_eq!(offset_of!(AccountInfo, is_signer), 40);
-        let is_signer_ptr = (account_info_addr + 40) as *const bool;
+        assert_eq!(offset_of!(AccountInfo, is_signer), 32);
+        let is_signer_ptr = (account_info_addr + 32) as *const bool;
         unsafe {
             assert!(*is_signer_ptr);
         }
 
         // is_writable
-        assert_eq!(offset_of!(AccountInfo, is_writable), 41);
-        let is_writable_ptr = (account_info_addr + 41) as *const bool;
+        assert_eq!(offset_of!(AccountInfo, is_writable), 33);
+        let is_writable_ptr = (account_info_addr + 33) as *const bool;
         unsafe {
             assert!(!*is_writable_ptr);
         }
 
         // executable
-        assert_eq!(offset_of!(AccountInfo, executable), 42);
-        let executable_ptr = (account_info_addr + 42) as *const bool;
+        assert_eq!(offset_of!(AccountInfo, executable), 34);
+        let executable_ptr = (account_info_addr + 34) as *const bool;
         unsafe {
             assert!(*executable_ptr);
         }
