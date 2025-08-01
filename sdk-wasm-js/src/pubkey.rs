@@ -8,7 +8,7 @@ use {
 
 #[wasm_bindgen]
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub struct Pubkey(pub solana_pubkey::Pubkey);
+pub struct Pubkey(pub(crate) solana_pubkey::Pubkey);
 
 fn js_value_to_seeds_vec(array_of_uint8_arrays: &[JsValue]) -> Result<Vec<Vec<u8>>, JsValue> {
     let vec_vec_u8 = array_of_uint8_arrays
