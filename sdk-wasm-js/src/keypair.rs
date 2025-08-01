@@ -4,6 +4,12 @@ use {crate::pubkey::Pubkey, solana_signer::Signer, wasm_bindgen::prelude::*};
 #[derive(Debug)]
 pub struct Keypair(pub(crate) solana_keypair::Keypair);
 
+impl Keypair {
+    pub fn new(inner: solana_keypair::Keypair) -> Self {
+        Self(inner)
+    }
+}
+
 #[allow(non_snake_case)]
 #[wasm_bindgen]
 impl Keypair {
