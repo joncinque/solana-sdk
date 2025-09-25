@@ -10,6 +10,7 @@ cd "${src_root}"
 no_std_crates=(
   -p solana-address
   -p solana-clock
+  -p solana-cluster-type
   -p solana-commitment-config
   -p solana-define-syscall
   -p solana-epoch-info
