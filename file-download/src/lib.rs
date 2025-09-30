@@ -60,6 +60,7 @@ pub fn download_file<'a, 'b>(
     destination_file: &Path,
     use_progress_bar: bool,
     progress_notify_callback: &'a mut DownloadProgressCallbackOption<'b>,
+    headers: &[(&'static str, &'static str)],
 ) -> Result<(), String> {
     if destination_file.is_file() {
         return Err(format!("{destination_file:?} already exists"));
@@ -84,8 +85,14 @@ pub fn download_file<'a, 'b>(
         progress_bar.set_message(format!("{TRUCK}Downloading {url}..."));
     }
 
+    let mut header_map = reqwest::header::HeaderMap::new();
+    for (key, value) in headers {
+        header_map.insert(*key, value.parse().unwrap());
+    }
+
     let response = reqwest::blocking::Client::new()
         .get(url)
+        .headers(header_map)
         .send()
         .and_then(|response| response.error_for_status())
         .map_err(|err| {
