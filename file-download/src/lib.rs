@@ -60,6 +60,22 @@ pub fn download_file<'a, 'b>(
     destination_file: &Path,
     use_progress_bar: bool,
     progress_notify_callback: &'a mut DownloadProgressCallbackOption<'b>,
+) -> Result<(), String> {
+    download_file_with_headers(
+        url,
+        destination_file,
+        use_progress_bar,
+        progress_notify_callback,
+        &[],
+    )
+}
+
+/// This function works like `download_file`, but accepts HTTP headers.
+pub fn download_file_with_headers<'a, 'b>(
+    url: &str,
+    destination_file: &Path,
+    use_progress_bar: bool,
+    progress_notify_callback: &'a mut DownloadProgressCallbackOption<'b>,
     headers: &[(&'static str, &'static str)],
 ) -> Result<(), String> {
     if destination_file.is_file() {
