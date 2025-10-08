@@ -16,12 +16,12 @@ all-features = true
 rustdoc-args = ["--cfg=docsrs"]
 
 [features]
-borsh = ["dep:borsh", "std"]
+borsh = ["dep:borsh"]
 bytemuck = ["dep:bytemuck", "dep:bytemuck_derive"]
 default = ["std"]
 frozen-abi = ["dep:solana-frozen-abi", "dep:solana-frozen-abi-macro", "std"]
 serde = ["dep:serde", "dep:serde_derive"]
-std = ["serde/std", "borsh/std"]
+std = ["borsh?/std", "serde?/std"]
 
 [dependencies]
 borsh = { workspace = true, optional = true }
