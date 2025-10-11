@@ -33,7 +33,7 @@ rand = ["dep:rand", "atomic", "std"]
 sanitize = ["dep:solana-sanitize"]
 serde = ["dep:serde", "dep:serde_derive"]
 sha2 = ["dep:solana-sha256-hasher", "error"]
-std = ["decode", "borsh?/std", "serde?/std"]
+std = ["decode", "borsh?/std", "serde?/std", "alloc"]
 alloc = []
 syscalls = ["dep:solana-define-syscall", "error"]
 
