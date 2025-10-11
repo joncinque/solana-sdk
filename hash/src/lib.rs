@@ -3,6 +3,8 @@
 #![cfg_attr(feature = "frozen-abi", feature(min_specialization))]
 #[cfg(feature = "borsh")]
 use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
+#[cfg(feature = "std")]
+extern crate std;
 #[cfg(feature = "bytemuck")]
 use bytemuck_derive::{Pod, Zeroable};
 #[cfg(feature = "serde")]
