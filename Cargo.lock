@@ -2876,7 +2876,7 @@ dependencies = [
 
 [[package]]
 name = "solana-bn254"
-version = "3.0.0"
+version = "3.1.1"
 dependencies = [
  "ark-bn254",
  "ark-ec",
@@ -3590,6 +3590,23 @@ dependencies = [
  "num_enum",
  "serde",
  "serde_derive",
+]
+
+[[package]]
+name = "solana-program-log"
+version = "0.0.0"
+dependencies = [
+ "solana-define-syscall",
+ "solana-program-log-macro",
+]
+
+[[package]]
+name = "solana-program-log-macro"
+version = "0.0.0"
+dependencies = [
+ "quote",
+ "regex",
+ "syn 2.0.98",
 ]
 
 [[package]]

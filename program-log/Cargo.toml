@@ -1,0 +1,32 @@
+[package]
+name = "solana-program-log"
+description = "Lightweight log utility for Solana programs"
+version = "0.0.0"
+authors = { workspace = true }
+repository = { workspace = true }
+homepage = { workspace = true }
+license = { workspace = true }
+edition = { workspace = true }
+readme = "./README.md"
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu"]
+all-features = true
+rustdoc-args = ["--cfg=docsrs"]
+
+[lib]
+crate-type = ["rlib"]
+
+[features]
+default = ["macro"]
+macro = ["dep:solana-program-log-macro"]
+std = []
+
+[dependencies]
+solana-program-log-macro = { workspace = true, optional = true }
+
+[target.'cfg(target_os = "solana")'.dependencies]
+solana-define-syscall = { workspace = true }
+
+[lints]
+workspace = true

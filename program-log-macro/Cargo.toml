@@ -1,0 +1,24 @@
+[package]
+name = "solana-program-log-macro"
+description = "Macro for solana program log utility"
+documentation = "https://docs.rs/solana-program-log-macro"
+version = "0.0.0"
+authors = { workspace = true }
+repository = { workspace = true }
+homepage = { workspace = true }
+license = { workspace = true }
+edition = { workspace = true }
+readme = "./README.md"
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu"]
+all-features = true
+rustdoc-args = ["--cfg=docsrs"]
+
+[lib]
+proc-macro = true
+
+[dependencies]
+quote = { workspace = true }
+regex = { workspace = true }
+syn = { workspace = true, features = ["extra-traits", "full"] }

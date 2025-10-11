@@ -60,6 +60,8 @@ members = [
     "program",
     "program-entrypoint",
     "program-error",
+    "program-log",
+    "program-log-macro",
     "program-memory",
     "program-option",
     "program-pack",
@@ -187,7 +189,7 @@ memmap2 = "0.5.10"
 memoffset = "0.9"
 num-bigint = "0.4.6"
 num-derive = "0.4"
-num-traits = "0.2.18"
+num-traits = { version = "0.2.18", default-features = false }
 num_enum = "0.7.3"
 openssl = "0.10.72"
 pairing = "0.23.0"
@@ -200,6 +202,7 @@ qualifier_attr = { version = "0.2.2", default-features = false }
 quote = "1.0.35"
 rand = "0.8.5"
 rayon = "1.10.0"
+regex = "1.11"
 reqwest = { version = "0.11.27", default-features = false }
 serde = { version = "1.0.226", default-features = false } # must match the serde_derive version, see https://github.com/serde-rs/serde/issues/2584#issuecomment-1685252251
 serde-big-array = "0.5.1"
@@ -274,6 +277,8 @@ solana-presigner = { path = "presigner", version = "3.0.0" }
 solana-program = { path = "program", version = "3.0.0", default-features = false }
 solana-program-entrypoint = { path = "program-entrypoint", version = "3.0.0" }
 solana-program-error = { path = "program-error", version = "3.0.0" }
+solana-program-log = { path = "program-log", version = "0.0.0" }
+solana-program-log-macro = { path = "program-log-macro", version = "0.0.0" }
 solana-program-memory = { path = "program-memory", version = "3.0.0" }
 solana-program-option = { path = "program-option", version = "3.0.0" }
 solana-program-pack = { path = "program-pack", version = "3.0.0" }

@@ -14,6 +14,13 @@
 //!
 //! [rent exempt]: https://solana.com/docs/core/accounts#rent-exemption
 //!
+//! The [`create_account`] function requires that the account have zero
+//! lamports. [`create_account_allow_prefund`] allows for the account to have
+//! lamports prefunded; note that without feature activation of [SIMD-0312],
+//! [`create_account_allow_prefund`] will fail downstream.
+//!
+//! [SIMD-0312]: https://github.com/solana-foundation/solana-improvement-documents/pull/312
+//!
 //! The accounts created by the System program can either be user-controlled,
 //! where the secret keys are held outside the blockchain,
 //! or they can be [program derived addresses][pda],
@@ -39,12 +46,14 @@
 //! [`Instruction`]:
 //! https://docs.rs/solana-instruction/latest/solana_instruction/struct.Instruction.html
 
-use solana_address::Address;
 #[cfg(feature = "bincode")]
 use {
     crate::program::ID,
+    alloc::{string::ToString, vec, vec::Vec},
     solana_instruction::{AccountMeta, Instruction},
 };
+#[cfg(feature = "alloc")]
+use {alloc::string::String, solana_address::Address};
 
 // Inline some constants to avoid dependencies.
 //
@@ -68,7 +77,7 @@ const NONCE_STATE_SIZE: usize = 80;
 /// An instruction to the system program.
 #[cfg_attr(
     feature = "frozen-abi",
-    solana_frozen_abi_macro::frozen_abi(digest = "8M189WgLE19cw1iYDAFLNJKoAUKyqF9jsKYennJi5BfK"),
+    solana_frozen_abi_macro::frozen_abi(digest = "CBvp4X1gf36kwDqnprAa6MpKckptiAHfXSxFRHFnNRVw"),
     derive(
         solana_frozen_abi_macro::AbiExample,
         solana_frozen_abi_macro::AbiEnumVisitor
@@ -78,6 +87,7 @@ const NONCE_STATE_SIZE: usize = 80;
     feature = "serde",
     derive(serde_derive::Deserialize, serde_derive::Serialize)
 )]
+#[cfg(feature = "alloc")]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum SystemInstruction {
     /// Create a new account
@@ -249,12 +259,50 @@ pub enum SystemInstruction {
     /// # Account references
     ///   0. `[WRITE]` Nonce account
     UpgradeNonceAccount,
+
+    /// Create a new account without enforcing the invariant that the account's
+    /// current lamports must be 0.
+    ///
+    /// This constructor is identical to [`create_account`] with the exception that it
+    /// **does not** check that the destination account (`to_pubkey`) has a zero
+    /// lamport balance prior to creation. This enables patterns where you first transfer
+    /// lamports to prefund an account, then use `create_account_allow_prefund` as a single
+    /// CPI to transfer additional lamports, allocate space, and assign ownership.
+    ///
+    /// Use [`create_account`] for typical account creation.
+    /// Use [`create_account_allow_prefund`] when the target account has already been
+    /// prefunded and you want to complete the creation process with a single CPI.
+    ///
+    /// **Safety considerations**
+    /// As with `allocate` and `assign` when invoked manually, this instruction can brick
+    /// a wallet if used incorrectly; do not pass in a wallet system account as the new
+    /// account. This instruction does not prevent the new account from having more
+    /// lamports than required for rent exemption, and all lamports will become locked.
+    ///
+    /// # Account references
+    /// If `lamports > 0` (meaning lamports are being transferred):
+    ///   0. `[WRITE, SIGNER]` New account
+    ///   1. `[WRITE, SIGNER]` Funding account
+    ///
+    /// If `lamports == 0` (no lamports to be transferred), you may omit funding account:
+    ///   0. `[WRITE, SIGNER]` New account
+    CreateAccountAllowPrefund {
+        /// Number of lamports to transfer to the new account
+        lamports: u64,
+
+        /// Number of bytes of memory to allocate
+        space: u64,
+
+        /// Address of program that will own the new account
+        owner: Address,
+    },
 }
 
 /// Create an account.
 ///
 /// This function produces an [`Instruction`] which must be submitted in a
 /// [`Transaction`] or [invoked] to take effect, containing a serialized
+///
 /// [`SystemInstruction::CreateAccount`].
 ///
 /// [`Transaction`]: https://docs.rs/solana-sdk/latest/solana_sdk/transaction/struct.Transaction.html
@@ -1669,6 +1717,40 @@ pub fn upgrade_nonce_account(nonce_address: Address) -> Instruction {
     Instruction::new_with_bincode(ID, &SystemInstruction::UpgradeNonceAccount, account_metas)
 }
 
+/// Create a new account without enforcing zero lamports on the destination
+/// account.
+///
+/// # Required signers
+///
+/// The `new_account_address` signer must sign the transaction. If present,
+/// the payer in `payer_and_lamports` must also sign the transaction.
+#[cfg(feature = "bincode")]
+pub fn create_account_allow_prefund(
+    new_account_address: &Address,
+    payer_and_lamports: Option<(&Address, u64)>,
+    space: u64,
+    owner: &Address,
+) -> Instruction {
+    let mut account_metas = vec![AccountMeta::new(*new_account_address, true)];
+    let lamports = match payer_and_lamports {
+        None => 0,
+        Some((from, lamports)) => {
+            account_metas.push(AccountMeta::new(*from, true));
+            lamports
+        }
+    };
+
+    Instruction::new_with_bincode(
+        ID,
+        &SystemInstruction::CreateAccountAllowPrefund {
+            lamports,
+            space,
+            owner: *owner,
+        },
+        account_metas,
+    )
+}
+
 #[cfg(feature = "bincode")]
 #[cfg(test)]
 mod tests {
@@ -1719,5 +1801,53 @@ mod tests {
         let addresss: Vec<_> = ix.accounts.iter().map(|am| am.pubkey).collect();
         assert!(addresss.contains(&from_address));
         assert!(addresss.contains(&nonce_address));
+    }
+
+    #[test]
+    fn test_create_account_allow_prefund_with_from_address() {
+        let from_address = Address::new_unique();
+        let to_address = Address::new_unique();
+
+        let instr = create_account_allow_prefund(
+            &to_address,
+            Some((&from_address, 1)),
+            8, // arbitrary space
+            &crate::program::ID,
+        );
+
+        assert_eq!(instr.program_id, crate::program::ID);
+        // Expect two account metas: [to, from]
+        assert_eq!(instr.accounts.len(), 2);
+
+        let to_meta = &instr.accounts[0];
+        assert_eq!(to_meta.pubkey, to_address);
+        assert!(to_meta.is_signer);
+        assert!(to_meta.is_writable);
+
+        let from_meta = &instr.accounts[1];
+        assert_eq!(from_meta.pubkey, from_address);
+        assert!(from_meta.is_signer);
+        assert!(from_meta.is_writable);
+    }
+
+    #[test]
+    fn test_create_account_allow_prefund_without_from_address() {
+        let to_address = Address::new_unique();
+
+        let instr = create_account_allow_prefund(
+            &to_address,
+            None,
+            8, // arbitrary space
+            &crate::program::ID,
+        );
+
+        assert_eq!(instr.program_id, crate::program::ID);
+        // Expect a single account meta: [to]
+        assert_eq!(instr.accounts.len(), 1);
+
+        let to_meta = &instr.accounts[0];
+        assert_eq!(to_meta.pubkey, to_address);
+        assert!(to_meta.is_signer);
+        assert!(to_meta.is_writable);
     }
 }
