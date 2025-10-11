@@ -22,7 +22,7 @@ bytemuck = ["dep:bytemuck", "dep:bytemuck_derive"]
 frozen-abi = ["dep:solana-frozen-abi", "dep:solana-frozen-abi-macro", "std"]
 rand = ["dep:rand"]
 serde = ["dep:serde", "dep:serde_derive", "dep:serde-big-array"]
-std = ["alloc", "serde/std"]
+std = ["alloc", "serde?/std"]
 verify = ["dep:ed25519-dalek"]
 
 [dependencies]
