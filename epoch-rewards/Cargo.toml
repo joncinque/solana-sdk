@@ -22,7 +22,7 @@ frozen-abi = [
     "std",
 ]
 serde = ["dep:serde", "dep:serde_derive", "solana-hash/serde"]
-std = ["serde/std"]
+std = ["serde?/std"]
 sysvar = ["dep:solana-sysvar-id"]
 
 [dependencies]
