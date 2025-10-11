@@ -11,6 +11,8 @@ use serde_derive::{Deserialize, Serialize};
 extern crate alloc;
 #[cfg(feature = "borsh")]
 use alloc::string::ToString;
+#[cfg(feature = "std")]
+extern crate std;
 
 use {
     core::{

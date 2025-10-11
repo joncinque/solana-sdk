@@ -42,6 +42,7 @@ serde = [
     "dep:serde_with",
     "dep:solana-serde-varint",
     "dep:solana-short-vec",
+    "serde/alloc",
     "solana-hash/serde",
     "solana-pubkey/serde",
 ]

@@ -22,7 +22,7 @@ bytemuck = ["dep:bytemuck", "dep:bytemuck_derive"]
 frozen-abi = ["dep:solana-frozen-abi", "dep:solana-frozen-abi-macro", "std"]
 rand = ["dep:rand"]
 serde = ["dep:serde", "dep:serde_derive", "dep:serde-big-array"]
-std = ["alloc", "serde/std"]
+std = ["alloc", "serde?/std"]
 verify = ["dep:ed25519-dalek"]
 
 [dependencies]
@@ -45,7 +45,7 @@ curve25519-dalek = { workspace = true }
 ed25519-dalek = { workspace = true }
 serde_derive = { workspace = true }
 serde_json = { workspace = true }
-solana-pubkey = { workspace = true, features = ["std"] }
+solana-pubkey = { workspace = true, features = ["alloc", "std"] }
 solana-short-vec = { workspace = true }
 solana-signature = { path = ".", features = ["serde"] }
 

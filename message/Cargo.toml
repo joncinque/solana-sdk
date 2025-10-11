@@ -31,6 +31,7 @@ serde = [
     "dep:serde",
     "dep:serde_derive",
     "dep:solana-short-vec",
+    "serde/alloc",
     "solana-address/serde",
     "solana-hash/serde",
 ]

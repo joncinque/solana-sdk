@@ -26,7 +26,7 @@ bincode = [
 bytemuck = ["dep:bytemuck", "solana-pubkey/bytemuck"]
 dev-context-only-utils = ["bincode", "bytemuck"]
 frozen-abi = ["dep:solana-frozen-abi", "dep:solana-frozen-abi-macro", "serde"]
-serde = ["dep:serde", "dep:serde_derive", "solana-pubkey/serde"]
+serde = ["dep:serde", "dep:serde_derive", "serde/alloc", "solana-pubkey/serde"]
 
 [dependencies]
 bincode = { workspace = true, optional = true }

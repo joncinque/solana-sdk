@@ -5,11 +5,6 @@ extern crate alloc;
 #[cfg(feature = "std")]
 extern crate std;
 
-/// We re-export the `format!` macro from `alloc` for use in the `msg!` macro
-#[cfg(feature = "alloc")]
-#[doc(hidden)]
-pub use alloc::format;
-
 /// Print a message to the log.
 ///
 /// Supports simple strings as well as Rust [format strings][fs]. When passed a
@@ -43,7 +38,7 @@ macro_rules! msg {
     ($msg:expr) => {
         $crate::sol_log($msg)
     };
-    ($($arg:tt)*) => ($crate::sol_log(&$crate::format!($($arg)*)));
+    ($($arg:tt)*) => ($crate::sol_log(&::alloc::format!($($arg)*)));
 }
 
 #[cfg(target_os = "solana")]
