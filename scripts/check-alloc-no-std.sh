@@ -11,11 +11,12 @@ source "$here"/no-std-crates.sh
 
 cd "${src_root}"
 
-# Use the upstream BPF target, which doesn't support std, to make sure that our
-# no_std support really works.
-target="bpfel-unknown-none"
+# Use the wasm32v1-none target, which doesn't support std, but allows for alloc,
+# to make sure that certain features work with no_std support.
+target="wasm32v1-none"
 
-./cargo nightly check -Zbuild-std=core \
+./cargo check \
   "--target=$target" \
   --no-default-features \
+  --features alloc,borsh,bytemuck,serde \
   "${no_std_crates[@]}"
