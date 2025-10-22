@@ -1,21 +1,16 @@
 #![no_std]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![cfg_attr(feature = "frozen-abi", feature(min_specialization))]
+
+#[cfg(feature = "frozen-abi")]
+use solana_frozen_abi_macro::{AbiEnumVisitor, AbiExample};
 #[cfg(feature = "std")]
 extern crate std;
-use {
-    core::{fmt, str::FromStr},
-    solana_hash::Hash,
-};
+
+use {core::str::FromStr, solana_hash::Hash};
 
 // The order can't align with release lifecycle only to remain ABI-compatible...
-#[cfg_attr(
-    feature = "frozen-abi",
-    derive(
-        solana_frozen_abi_macro::AbiExample,
-        solana_frozen_abi_macro::AbiEnumVisitor
-    )
-)]
+#[cfg_attr(feature = "frozen-abi", derive(AbiExample, AbiEnumVisitor))]
 #[cfg_attr(
     feature = "serde",
     derive(serde_derive::Deserialize, serde_derive::Serialize)
@@ -48,24 +43,8 @@ impl ClusterType {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ParseClusterTypeError {
-    /// Unrecognized cluster type
-    Unrecognized,
-}
-
-impl core::error::Error for ParseClusterTypeError {}
-
-impl fmt::Display for ParseClusterTypeError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Unrecognized => f.write_str("Unrecognized cluster type"),
-        }
-    }
-}
-
 impl FromStr for ClusterType {
-    type Err = ParseClusterTypeError;
+    type Err = &'static str;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
@@ -73,7 +52,7 @@ impl FromStr for ClusterType {
             "devnet" => Ok(ClusterType::Devnet),
             "testnet" => Ok(ClusterType::Testnet),
             "mainnet-beta" => Ok(ClusterType::MainnetBeta),
-            _ => Err(ParseClusterTypeError::Unrecognized),
+            _ => Err("Unrecognized cluster type"),
         }
     }
 }
