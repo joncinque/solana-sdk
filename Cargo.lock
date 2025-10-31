@@ -2767,7 +2767,7 @@ dependencies = [
  "serde_derive",
  "solana-account-info",
  "solana-address",
- "solana-atomic-u64 3.0.0",
+ "solana-atomic-u64",
  "solana-cpi",
  "solana-define-syscall",
  "solana-example-mocks",
@@ -2776,7 +2776,7 @@ dependencies = [
  "solana-hash 3.0.0",
  "solana-instruction",
  "solana-program-error",
- "solana-sanitize 3.0.1",
+ "solana-sanitize",
  "solana-sha256-hasher",
  "solana-system-interface",
  "strum",
@@ -2806,15 +2806,6 @@ dependencies = [
 [[package]]
 name = "solana-atomic-u64"
 version = "3.0.0"
-dependencies = [
- "parking_lot",
-]
-
-[[package]]
-name = "solana-atomic-u64"
-version = "3.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a933ff1e50aff72d02173cfcd7511bd8540b027ee720b75f353f594f834216d0"
 dependencies = [
  "parking_lot",
 ]
@@ -3265,10 +3256,10 @@ dependencies = [
  "five8",
  "serde",
  "serde_derive",
- "solana-atomic-u64 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "solana-atomic-u64",
  "solana-frozen-abi 3.0.1",
  "solana-frozen-abi-macro 3.0.1",
- "solana-sanitize 3.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "solana-sanitize",
 ]
 
 [[package]]
@@ -3321,7 +3312,7 @@ dependencies = [
  "solana-instruction-error",
  "solana-program-error",
  "solana-pubkey",
- "solana-sanitize 3.0.1",
+ "solana-sanitize",
  "solana-sdk-ids",
  "solana-serialize-utils",
  "solana-sysvar-id",
@@ -3448,7 +3439,7 @@ dependencies = [
  "solana-logger",
  "solana-message",
  "solana-nonce",
- "solana-sanitize 3.0.1",
+ "solana-sanitize",
  "solana-sdk-ids",
  "solana-short-vec",
  "solana-system-interface",
@@ -3503,7 +3494,7 @@ dependencies = [
  "solana-offchain-message",
  "solana-packet",
  "solana-pubkey",
- "solana-sanitize 3.0.1",
+ "solana-sanitize",
  "solana-sha256-hasher",
  "solana-signature",
  "solana-signer",
@@ -3722,12 +3713,6 @@ name = "solana-sanitize"
 version = "3.0.1"
 
 [[package]]
-name = "solana-sanitize"
-version = "3.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dcf09694a0fc14e5ffb18f9b7b7c0f15ecb6eac5b5610bf76a1853459d19daf9"
-
-[[package]]
 name = "solana-sdk"
 version = "3.0.0"
 dependencies = [
@@ -3747,7 +3732,7 @@ dependencies = [
  "solana-program",
  "solana-program-memory",
  "solana-pubkey",
- "solana-sanitize 3.0.1",
+ "solana-sanitize",
  "solana-sdk",
  "solana-sdk-ids",
  "solana-sdk-macro",
@@ -3911,7 +3896,7 @@ dependencies = [
  "serde",
  "solana-instruction-error",
  "solana-pubkey",
- "solana-sanitize 3.0.1",
+ "solana-sanitize",
 ]
 
 [[package]]
@@ -3964,7 +3949,7 @@ dependencies = [
  "solana-frozen-abi 3.0.0",
  "solana-frozen-abi-macro 3.0.0",
  "solana-pubkey",
- "solana-sanitize 3.0.1",
+ "solana-sanitize",
  "solana-short-vec",
  "solana-signature",
 ]
@@ -4150,7 +4135,7 @@ dependencies = [
  "solana-packet",
  "solana-presigner",
  "solana-pubkey",
- "solana-sanitize 3.0.1",
+ "solana-sanitize",
  "solana-sdk-ids",
  "solana-sha256-hasher",
  "solana-short-vec",
@@ -4172,7 +4157,7 @@ dependencies = [
  "solana-frozen-abi 3.0.0",
  "solana-frozen-abi-macro 3.0.0",
  "solana-instruction-error",
- "solana-sanitize 3.0.1",
+ "solana-sanitize",
 ]
 
 [[package]]
