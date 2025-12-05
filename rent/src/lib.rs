@@ -43,7 +43,9 @@ pub struct Rent {
 /// - $7.30 per megabyte
 pub const DEFAULT_LAMPORTS_PER_BYTE: u64 = 6_960;
 
-const DEFAULT_EXEMPTION_THRESHOLD: [u8; 8] = 1f64.to_le_bytes();
+// 1 as a 64-bit little-endian float, f64::to_le_bytes() is not stable in a
+// const context for older rust versions
+const DEFAULT_EXEMPTION_THRESHOLD: [u8; 8] = [0, 0, 0, 0, 0, 0, 240, 63];
 const DEFAULT_BURN_PERCENT: u8 = 50;
 
 /// Account storage overhead for calculation of base rent.
@@ -112,6 +114,11 @@ mod tests {
         #[allow(clippy::clone_on_copy)]
         let cloned_rent = rent.clone();
         assert_eq!(cloned_rent, rent);
+    }
+
+    #[test]
+    fn test_default_exemption_threshold() {
+        assert_eq!(1f64.to_le_bytes(), DEFAULT_EXEMPTION_THRESHOLD);
     }
 
     proptest! {
