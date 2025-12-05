@@ -46,6 +46,10 @@ pub const DEFAULT_LAMPORTS_PER_BYTE: u64 = 6_960;
 // 1 as a 64-bit little-endian float, f64::to_le_bytes() is not stable in a
 // const context for older rust versions
 const DEFAULT_EXEMPTION_THRESHOLD: [u8; 8] = [0, 0, 0, 0, 0, 0, 240, 63];
+// 2 as a 64-bit little-endian float, f64::to_le_bytes() is not stable in a
+// const context for older rust versions. Remove this const and the match arm
+// using it in `minimum_balance()` once SIMD-0194 is released.
+const PREVIOUS_EXEMPTION_THRESHOLD: [u8; 8] = [0, 0, 0, 0, 0, 0, 0, 64];
 const DEFAULT_BURN_PERCENT: u8 = 50;
 
 /// Account storage overhead for calculation of base rent.
@@ -68,11 +72,17 @@ impl Rent {
     /// Minimum balance due for rent-exemption of a given account data size.
     pub fn minimum_balance(&self, data_len: usize) -> u64 {
         let bytes = data_len as u64;
-        if self.unused_exemption_threshold == DEFAULT_EXEMPTION_THRESHOLD {
-            (ACCOUNT_STORAGE_OVERHEAD + bytes) * self.lamports_per_byte
-        } else {
-            (((ACCOUNT_STORAGE_OVERHEAD + bytes) * self.lamports_per_byte) as f64
-                * f64::from_le_bytes(self.unused_exemption_threshold)) as u64
+        match self.unused_exemption_threshold {
+            DEFAULT_EXEMPTION_THRESHOLD => {
+                (ACCOUNT_STORAGE_OVERHEAD + bytes) * self.lamports_per_byte
+            }
+            PREVIOUS_EXEMPTION_THRESHOLD => {
+                2 * (ACCOUNT_STORAGE_OVERHEAD + bytes) * self.lamports_per_byte
+            }
+            _ => {
+                (((ACCOUNT_STORAGE_OVERHEAD + bytes) * self.lamports_per_byte) as f64
+                    * f64::from_le_bytes(self.unused_exemption_threshold)) as u64
+            }
         }
     }
 
@@ -117,8 +127,9 @@ mod tests {
     }
 
     #[test]
-    fn test_default_exemption_threshold() {
+    fn test_exemption_threshold() {
         assert_eq!(1f64.to_le_bytes(), DEFAULT_EXEMPTION_THRESHOLD);
+        assert_eq!(2f64.to_le_bytes(), PREVIOUS_EXEMPTION_THRESHOLD);
     }
 
     proptest! {
@@ -130,7 +141,13 @@ mod tests {
                 unused_exemption_threshold: 2.0f64.to_le_bytes(),
                 ..Default::default()
             };
-            assert_eq!(default_rent.minimum_balance(bytes), previous_rent.minimum_balance(bytes));
+            let default_calc = default_rent.minimum_balance(bytes);
+            assert_eq!(default_calc, previous_rent.minimum_balance(bytes));
+
+            // check that the calculation gives the same result using floats
+            let float_calc = (((ACCOUNT_STORAGE_OVERHEAD + bytes as u64) * previous_rent.lamports_per_byte) as f64
+                * f64::from_le_bytes(previous_rent.unused_exemption_threshold)) as u64;
+            assert_eq!(default_calc, float_calc);
         }
     }
 }
