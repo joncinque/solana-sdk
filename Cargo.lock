@@ -4432,7 +4432,7 @@ dependencies = [
 
 [[package]]
 name = "solana-secp256k1-recover"
-version = "3.1.1"
+version = "3.2.0"
 dependencies = [
  "anyhow",
  "borsh",
