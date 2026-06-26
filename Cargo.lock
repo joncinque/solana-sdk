@@ -4730,7 +4730,7 @@ dependencies = [
 
 [[package]]
 name = "solana-sysvar"
-version = "4.0.0"
+version = "4.1.0"
 dependencies = [
  "anyhow",
  "base64",
