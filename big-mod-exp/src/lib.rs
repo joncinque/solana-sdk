@@ -7,15 +7,15 @@
 #[derive(Clone, Copy, Debug)]
 pub struct BigModExpParams {
     /// VM pointer to the base bytes.
-    pub base: *const u8,
+    pub base: u64,
     /// Length of the base bytes.
     pub base_len: u64,
     /// VM pointer to the exponent bytes.
-    pub exponent: *const u8,
+    pub exponent: u64,
     /// Length of the exponent bytes.
     pub exponent_len: u64,
     /// VM pointer to the modulus bytes.
-    pub modulus: *const u8,
+    pub modulus: u64,
     /// Length of the modulus bytes and writable result buffer.
     pub modulus_len: u64,
 }
@@ -74,11 +74,11 @@ pub fn big_mod_exp(base: &[u8], exponent: &[u8], modulus: &[u8]) -> Option<Vec<u
     {
         let mut return_value = vec![0_u8; modulus.len()];
         let params = BigModExpParams {
-            base: base.as_ptr(),
+            base: base.as_ptr() as u64,
             base_len: base.len() as u64,
-            exponent: exponent.as_ptr(),
+            exponent: exponent.as_ptr() as u64,
             exponent_len: exponent.len() as u64,
-            modulus: modulus.as_ptr(),
+            modulus: modulus.as_ptr() as u64,
             modulus_len: modulus.len() as u64,
         };
         // SAFETY: `validate_inputs` bounds the slice lengths and rejects
@@ -355,5 +355,32 @@ mod tests {
     #[test]
     fn big_mod_exp_multi_byte_zero_modulus_returns_none() {
         assert_eq!(big_mod_exp(&[0x00], &[], &[0x00, 0x00]), None);
+    }
+
+    #[test]
+    fn big_mod_exp_explicit_zero_base_empty_exponent_test() {
+        assert_eq!(big_mod_exp(&[0x00], &[], &[0x03]), Some(vec![0x01]));
+    }
+
+    #[test]
+    fn big_mod_exp_multi_byte_even_modulus_returns_none() {
+        assert_eq!(big_mod_exp(&[0x00], &[], &[0x02, 0x01, 0x00]), None);
+    }
+
+    #[test]
+    fn big_mod_exp_base_equal_modulus_reduction_test() {
+        assert_eq!(
+            big_mod_exp(&[0x07, 0x00], &[0x01], &[0x07, 0x00]),
+            Some(vec![0x00, 0x00])
+        );
+    }
+
+    #[test]
+    fn big_mod_exp_highly_padded_modulus_test() {
+        // Modulus is 3, padded to 4 bytes. Output padded to 4 bytes.
+        assert_eq!(
+            big_mod_exp(&[0x02], &[0x02], &[0x03, 0x00, 0x00, 0x00]),
+            Some(vec![0x01, 0x00, 0x00, 0x00])
+        );
     }
 }
