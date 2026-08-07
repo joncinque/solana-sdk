@@ -4016,7 +4016,7 @@ dependencies = [
 
 [[package]]
 name = "solana-poseidon"
-version = "4.0.0"
+version = "5.0.0"
 dependencies = [
  "ark-bn254",
  "light-poseidon",
