@@ -250,12 +250,11 @@ impl solana_frozen_abi::rand::prelude::Distribution<Transaction>
 
 impl Sanitize for Transaction {
     fn sanitize(&self) -> Result<(), SanitizeError> {
-        if self.message.header.num_required_signatures as usize > self.signatures.len() {
-            return Err(SanitizeError::IndexOutOfBounds);
-        }
-        if self.signatures.len() > self.message.account_keys.len() {
-            return Err(SanitizeError::IndexOutOfBounds);
-        }
+        versioned::VersionedTransaction::sanitize_signatures_inner(
+            usize::from(self.message.header.num_required_signatures),
+            self.message.account_keys.len(),
+            self.signatures.len(),
+        )?;
         self.message.sanitize()
     }
 }
@@ -1267,6 +1266,10 @@ mod tests {
         assert_eq!(tx.sanitize(), Err(SanitizeError::IndexOutOfBounds));
 
         tx = o.clone();
+        tx.signatures.push(Signature::default());
+        assert_eq!(tx.sanitize(), Err(SanitizeError::InvalidValue));
+
+        tx = o.clone();
         tx.message.header.num_readonly_signed_accounts = 4;
         tx.message.header.num_readonly_unsigned_accounts = 0;
         assert_eq!(tx.sanitize(), Err(SanitizeError::IndexOutOfBounds));
@@ -1302,6 +1305,7 @@ mod tests {
         tx = o;
         tx.message.header.num_readonly_signed_accounts = 2;
         tx.message.header.num_required_signatures = 1;
+        tx.signatures.truncate(1);
         assert_eq!(tx.sanitize(), Err(SanitizeError::IndexOutOfBounds));
     }
 
