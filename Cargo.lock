@@ -3978,7 +3978,7 @@ dependencies = [
 
 [[package]]
 name = "solana-offchain-message"
-version = "3.0.0"
+version = "3.0.1"
 dependencies = [
  "num_enum",
  "solana-hash",
