@@ -3908,7 +3908,7 @@ version = "3.0.0"
 
 [[package]]
 name = "solana-nonce"
-version = "3.3.0"
+version = "3.4.0"
 dependencies = [
  "bincode",
  "serde",
