@@ -3107,7 +3107,7 @@ dependencies = [
 
 [[package]]
 name = "solana-account"
-version = "5.0.0"
+version = "5.1.0"
 dependencies = [
  "bincode",
  "qualifier_attr",
