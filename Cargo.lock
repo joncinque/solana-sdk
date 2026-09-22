@@ -3501,7 +3501,7 @@ dependencies = [
 
 [[package]]
 name = "solana-epoch-schedule"
-version = "3.3.0"
+version = "3.4.0"
 dependencies = [
  "serde",
  "serde_derive",
