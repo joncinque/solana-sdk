@@ -267,7 +267,7 @@ solana-frozen-abi-macro = { path = "frozen-abi-macro", version = "3.7.0", defaul
 solana-genesis-config = { path = "genesis-config", version = "5.0.0" }
 solana-get-sysvar = { path = "get-sysvar", version = "1.0.0" }
 solana-hard-forks = { path = "hard-forks", version = "3.2.0", default-features = false }
-solana-hash = { path = "hash", version = "4.6.0", default-features = false }
+solana-hash = { path = "hash", version = "4.7.0", default-features = false }
 solana-hash-512 = { path = "hash-512", version = "1.2.0", default-features = false }
 solana-inflation = { path = "inflation", version = "3.2.0" }
 solana-instruction = { path = "instruction", version = "4.0.0", default-features = false }
