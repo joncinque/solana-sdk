@@ -3350,7 +3350,7 @@ dependencies = [
 
 [[package]]
 name = "solana-bls-signatures"
-version = "4.0.1"
+version = "4.0.2"
 dependencies = [
  "anza-blstrs",
  "base64",
