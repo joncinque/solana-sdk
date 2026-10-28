@@ -3738,7 +3738,7 @@ dependencies = [
 
 [[package]]
 name = "solana-genesis-config"
-version = "5.0.1"
+version = "5.0.2"
 dependencies = [
  "bincode",
  "chrono",
