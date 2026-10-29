@@ -10,6 +10,10 @@ pub trait SeedDerivable: Sized {
         seed: &[u8],
         derivation_path: Option<DerivationPath>,
     ) -> Result<Self, Box<dyn error::Error>>;
+    /// Derives a key from a seed phrase and passphrase.
+    ///
+    /// Implementations of this function make no guarantees about NFKD normalization.
+    /// Be sure to normalize inputs prior to calling if needed.
     fn from_seed_phrase_and_passphrase(
         seed_phrase: &str,
         passphrase: &str,
